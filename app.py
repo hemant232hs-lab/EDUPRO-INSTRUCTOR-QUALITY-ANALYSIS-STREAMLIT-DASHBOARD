@@ -1,9 +1,3 @@
-import pandas as pd
-import numpy as np
-import streamlit as st
-import plotly.express as px
-import plotly.graph_objects as go
-
 # ==========================================
 # 1. PAGE CONFIGURATION & STYLING
 # ==========================================
@@ -43,15 +37,7 @@ st.markdown("""
         color: #ffffff !important;
     }
 
-    div[data-testid="stMetricValue"] {
-        font-size: 28px !important;
-        font-weight: bold !important;
-        color: #ffffff !important;
-    }
-    div[data-testid="stMetricLabel"] {
-        font-size: 14px !important;
-        color: #e0e1dd !important;
-    }
+    /* KPI Card Consistent Sizing & Alignment */
     .metric-card {
         background-color: #1b263b;
         border: 1px solid #415a77;
@@ -59,7 +45,25 @@ st.markdown("""
         padding: 15px;
         text-align: center;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        min-height: 130px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
     }
+    .metric-card h2, .metric-card h4 {
+        margin: 0 !important;
+        padding-bottom: 5px;
+        font-size: 28px;
+        color: #ffffff;
+    }
+    .metric-card p {
+        margin: 0 !important;
+        font-size: 14px;
+        color: #e0e1dd;
+    }
+    
     .info-box {
         background-color: #1b263b;
         border-left: 5px solid #00b4d8;
@@ -78,6 +82,7 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
+
 # ==========================================
 # 2. DATA LOADING & PREPROCESSING
 # ==========================================
@@ -152,9 +157,9 @@ selected_level = st.sidebar.multiselect(
 )
 
 exclude_outliers = st.sidebar.checkbox(
-    "Exclude Data Artifact Outliers (TC00040 & TC00042)",
+    "Exclude Data Artifact Outliers",
     value=False,
-    help="Excludes top 2 teachers accounting for 61% of all transaction records."
+    help="Excludes top 2 teachers (TC00040 & TC00042) accounting for 61% of all transaction records."
 )
 
 # Apply Filters
@@ -184,10 +189,6 @@ if tab_choice == "1. Executive Overview":
     st.subheader("Platform Executive KPI Overview")
 
     kpi1, kpi2, kpi3, kpi4, kpi5 = st.columns(5)
-    
-    avg_t_rating = filtered_teachers['TeacherRating'].mean()
-    avg_c_rating = filtered_courses['CourseRating'].mean()
-    exp_correl = filtered_teachers['YearsOfExperience'].corr(filtered_teachers['TeacherRating'])
     
     with kpi1:
         st.markdown(f'<div class="metric-card"><h4>3.13</h4><p>Avg Teachers Rating</p></div>', unsafe_allow_html=True)
@@ -245,7 +246,8 @@ elif tab_choice == "2. Instructor Profile":
             band_counts, x='Rating Band', y='Count of TeacherID',
             title="Count of TeacherID by Rating Band",
             text='Count of TeacherID',
-            color_discrete_sequence=['#ff6b6b']
+            color_discrete_sequence=['#ff6b6b'],
+            height=430
         )
         fig_bands.update_layout(
             paper_bgcolor='rgba(0,0,0,0)',
@@ -260,12 +262,12 @@ elif tab_choice == "2. Instructor Profile":
     with t_col1:
         st.subheader("Top 5 Instructors")
         top_5 = filtered_teachers.sort_values(by='TeacherRating', ascending=False).head(5)
-        st.dataframe(top_5[['TeacherName', 'TeacherRating', 'YearsOfExperience', 'Expertise']], hide_index=True)
+        st.dataframe(top_5[['TeacherName', 'TeacherRating', 'YearsOfExperience', 'Expertise']], hide_index=True, use_container_width=True)
 
     with t_col2:
         st.subheader("Bottom 5 Instructors")
         bot_5 = filtered_teachers.sort_values(by='TeacherRating', ascending=True).head(5)
-        st.dataframe(bot_5[['TeacherName', 'TeacherRating', 'YearsOfExperience', 'Expertise']], hide_index=True)
+        st.dataframe(bot_5[['TeacherName', 'TeacherRating', 'YearsOfExperience', 'Expertise']], hide_index=True, use_container_width=True)
 
 # ==========================================
 # TAB 3: EXPERIENCE VS PERFORMANCE
@@ -282,7 +284,8 @@ elif tab_choice == "3. Experience vs Performance":
             y='TeacherRating',
             trendline='ols',
             title="EXPERIENCE VS RATING SCATTER",
-            color_discrete_sequence=['#ff6b6b']
+            color_discrete_sequence=['#ff6b6b'],
+            height=350
         )
         fig_exp_teacher.update_layout(
             paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
@@ -296,7 +299,8 @@ elif tab_choice == "3. Experience vs Performance":
             y='CourseRating',
             title="EXPERIENCE VS COURSE RATING SCATTER",
             color_discrete_sequence=['#ff6b6b'],
-            opacity=0.4
+            opacity=0.4,
+            height=350
         )
         fig_exp_course.update_layout(
             paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
@@ -309,9 +313,9 @@ elif tab_choice == "3. Experience vs Performance":
         r_course_exp = filtered_tx['YearsOfExperience'].corr(filtered_tx['CourseRating'])
 
         st.markdown(f'<div class="metric-card"><h2>{r_teacher_exp:.2f}</h2><p>Correl Rating Experience</p></div>', unsafe_allow_html=True)
-        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown("<br><br>", unsafe_allow_html=True)
         st.markdown(f'<div class="metric-card"><h2>35.80</h2><p>Experience Impact Score</p></div>', unsafe_allow_html=True)
-        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown("<br><br>", unsafe_allow_html=True)
         st.markdown(f'<div class="metric-card"><h2>{r_course_exp:.2f}</h2><p>Correl Experience CourseRating</p></div>', unsafe_allow_html=True)
 
 # ==========================================
@@ -333,7 +337,8 @@ elif tab_choice == "4. Course Quality Evaluation":
         orientation='h',
         title="AVERAGE COURSE RATING BY CATEGORY",
         text_auto='.2f',
-        color_discrete_sequence=['#ff6b6b']
+        color_discrete_sequence=['#ff6b6b'],
+        height=400
     )
     fig_cat.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color='#ffffff'))
     st.plotly_chart(fig_cat, use_container_width=True)
@@ -345,7 +350,8 @@ elif tab_choice == "4. Course Quality Evaluation":
         fig_lvl = px.bar(
             lvl_avg, x='CourseLevel', y='CourseRating',
             title="AVERAGE COURSE RATING BY LEVEL",
-            text_auto='.2f', color_discrete_sequence=['#ff6b6b']
+            text_auto='.2f', color_discrete_sequence=['#ff6b6b'],
+            height=350
         )
         fig_lvl.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color='#ffffff'))
         st.plotly_chart(fig_lvl, use_container_width=True)
@@ -355,7 +361,8 @@ elif tab_choice == "4. Course Quality Evaluation":
         fig_gndr = px.bar(
             gndr_lvl, x='CourseLevel', y='CourseRating', color='Gender', barmode='group',
             title="COURSE RATING BY GENDER AND LEVEL",
-            text_auto='.2f'
+            text_auto='.2f',
+            height=350
         )
         fig_gndr.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color='#ffffff'))
         st.plotly_chart(fig_gndr, use_container_width=True)
@@ -386,7 +393,8 @@ elif tab_choice == "5. Instructor Impact & Tiering":
         fig_tr = px.bar(
             tier_rating, x='InstructorTier', y='CourseRating',
             title="AVERAGE COURSE RATING BY INSTRUCTOR TIER",
-            text_auto='.2f', color_discrete_sequence=['#ff6b6b']
+            text_auto='.2f', color_discrete_sequence=['#ff6b6b'],
+            height=400
         )
         fig_tr.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color='#ffffff'))
         st.plotly_chart(fig_tr, use_container_width=True)
@@ -395,7 +403,8 @@ elif tab_choice == "5. Instructor Impact & Tiering":
         fig_te = px.bar(
             tier_enroll, x='InstructorTier', y='TransactionID',
             title="TOTAL ENROLLMENT BY INSTRUCTOR TIER",
-            text_auto=True, color_discrete_sequence=['#ff6b6b']
+            text_auto=True, color_discrete_sequence=['#ff6b6b'],
+            height=400
         )
         fig_te.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color='#ffffff'))
         st.plotly_chart(fig_te, use_container_width=True)
@@ -415,13 +424,13 @@ elif tab_choice == "6. Research Paper & Findings":
 
     st.markdown("""
     ### Executive Summary
-    Online education platforms depend on both instructor effectiveness and course design quality to sustain learner satisfaction and platform credibility[cite: 2]. This study analyzes 60 instructors, 60 courses, and 10,000 transactions on EduPro[cite: 2].
+    Online education platforms depend on both instructor effectiveness and course design quality to sustain learner satisfaction and platform credibility. This study analyzes 60 instructors, 60 courses, and 10,000 transactions on EduPro.
     
     #### Key Empirical Findings:
-    1. **Teaching Experience vs. Teacher Rating:** $r = 0.60$ (Moderate-to-strong positive linear relationship)[cite: 2].
-    2. **Teacher Rating vs. Course Rating:** $r = -0.0016 \approx 0.00$ (No relationship)[cite: 2].
-    3. **Experience vs. Course Rating:** $r = -0.01$ (No relationship)[cite: 2].
-    4. **Data Artifact Discovery:** Two instructors represent $61\%$ of platform volume due to ingestion anomalies[cite: 2].
+    1. **Teaching Experience vs. Teacher Rating:** r = 0.60 (Moderate-to-strong positive linear relationship).
+    2. **Teacher Rating vs. Course Rating:** r = -0.0016 ≈ 0.00 (No relationship).
+    3. **Experience vs. Course Rating:** r = -0.01 (No relationship).
+    4. **Data Artifact Discovery:** Two instructors represent 61% of platform volume due to ingestion anomalies.
     """)
 
     st.markdown("---")
@@ -432,23 +441,29 @@ elif tab_choice == "6. Research Paper & Findings":
         TotalEnrollment=('TransactionID', 'count')
     ).reset_index()
 
+    # Improved Bubble Chart (Clutter Removed)
     fig_bubble = px.scatter(
         exp_summary,
         x='TotalEnrollment',
         y='AvgCourseRating',
         size='TotalEnrollment',
-        text='Expertise',
+        hover_name='Expertise', # Displays text on hover instead of overlapping on screen
         color='AvgCourseRating',
         color_continuous_scale='Reds',
-        title="Course Quality vs Enrollment Volume by Expertise Area"
+        title="Course Quality vs Enrollment Volume by Expertise Area (Hover for details)",
+        height=500 
     )
     fig_bubble.add_hline(y=3.10, line_dash="dash", annotation_text="Platform Avg (3.10)")
-    fig_bubble.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color='#ffffff'))
+    fig_bubble.update_layout(
+        paper_bgcolor='rgba(0,0,0,0)', 
+        plot_bgcolor='rgba(0,0,0,0)', 
+        font=dict(color='#ffffff')
+    )
     st.plotly_chart(fig_bubble, use_container_width=True)
 
     st.markdown("""
     ### Actionable Recommendations
-    * **Separate Improvement Tracks:** Treat instructor coaching and course content development as isolated workflows[cite: 2].
-    * **Prioritize High-Scale Low-Quality Categories:** Re-architect Machine Learning courses first[cite: 2].
-    * **Audit Data Pipelines:** Correct TeacherID transaction assignments prior to operational reporting[cite: 2].
+    * **Separate Improvement Tracks:** Treat instructor coaching and course content development as isolated workflows.
+    * **Prioritize High-Scale Low-Quality Categories:** Re-architect Machine Learning courses first.
+    * **Audit Data Pipelines:** Correct TeacherID transaction assignments prior to operational reporting.
     """)
