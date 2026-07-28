@@ -7,6 +7,12 @@ import plotly.graph_objects as go
 # ==========================================
 # 1. PAGE CONFIGURATION & STYLING
 # ==========================================
+import pandas as pd
+import numpy as np
+import streamlit as st
+import plotly.express as px
+import plotly.graph_objects as go
+
 st.set_page_config(
     page_title="EduPro Analytics Dashboard",
     page_icon="🎓",
@@ -21,9 +27,22 @@ st.markdown("""
         background-color: #0d1b2a;
         color: #e0e1dd;
     }
-    .css-1d3b087, .css-18ni753, [data-testid="stSidebar"] {
+    
+    /* Sidebar Background */
+    [data-testid="stSidebar"] {
         background-color: #1b263b !important;
     }
+    
+    /* Force Sidebar Text to be White */
+    [data-testid="stSidebar"] p, 
+    [data-testid="stSidebar"] span, 
+    [data-testid="stSidebar"] label, 
+    [data-testid="stSidebar"] h1, 
+    [data-testid="stSidebar"] h2, 
+    [data-testid="stSidebar"] h3 {
+        color: #ffffff !important;
+    }
+
     div[data-testid="stMetricValue"] {
         font-size: 28px !important;
         font-weight: bold !important;
@@ -59,7 +78,6 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
-
 # ==========================================
 # 2. DATA LOADING & PREPROCESSING
 # ==========================================
